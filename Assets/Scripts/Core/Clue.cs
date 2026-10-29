@@ -5,6 +5,11 @@ namespace Misterio.Core
     {
         // true si la pista se cumple en esa solución
         public abstract bool IsTrue(Solution solution);
+
+        // Quita de la cuadrícula las opciones que la pista hace imposibles
+        // Devuelve true si ha quitado alguna
+        public abstract bool Restrict(CaseGrid grid);
+
         // Frase que lee el jugador
         public abstract string GetText(CaseDefinition c);
     }

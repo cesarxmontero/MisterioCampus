@@ -8,6 +8,7 @@ namespace Misterio.Core
         public Category Category;
         public int Value;
         public bool Positive;
+
         public SuspectClue(int suspect, Category category, int value, bool positive)
         {
             Suspect = suspect;
@@ -15,11 +16,26 @@ namespace Misterio.Core
             Value = value;
             Positive = positive;
         }
+
         public override bool IsTrue(Solution solution)
         {
             bool matches = solution.Get(Suspect, Category) == Value;
             return matches == Positive;
         }
+
+        public override bool Restrict(CaseGrid grid)
+        {
+            bool changed = false;
+            for (int v = 0; v < grid.ValueCount(Category); v++)
+            {
+                // si afirma se quitan todos los demás valores, si niega solo ese
+                bool remove = Positive ? v != Value : v == Value;
+                if (remove && grid.Remove(Suspect, Category, v))
+                    changed = true;
+            }
+            return changed;
+        }
+
         public override string GetText(CaseDefinition c)
         {
             string text = c.Suspects[Suspect] + (Positive ? " estaba " : " no estaba ");

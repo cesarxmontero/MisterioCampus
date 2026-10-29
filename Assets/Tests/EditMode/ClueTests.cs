@@ -14,6 +14,7 @@ namespace Misterio.Tests
             Assert.AreEqual("Luna estaba en la residencia.", c.Clues[5].GetText(c));
             Assert.AreEqual("Nadie estaba leyendo en la biblioteca.", new RelationClue(0, 3, false).GetText(c));
         }
+        
         [Test]
         public void SuspectClue_PositiveAndNegative()
         {
@@ -32,6 +33,55 @@ namespace Misterio.Tests
         Assert.IsTrue(new RelationClue(3, 3, false).IsTrue(solution));
         Assert.IsTrue(new RelationClue(1, 1, true).IsTrue(solution));
         Assert.IsFalse(new RelationClue(1, 2, true).IsTrue(solution));
+        }
+
+        [Test]
+        public void SuspectClue_Negative_RemovesOneOption()
+        {
+            // Josep no estaba en la biblioteca
+            CaseGrid grid = new CaseGrid(4, 4, 4);
+            new SuspectClue(0, Category.Place, 0, false).Restrict(grid);
+
+            Assert.IsFalse(grid.IsPossible(0, Category.Place, 0));
+            Assert.AreEqual(3, grid.CountOptions(0, Category.Place));
+        }
+
+        [Test]
+        public void SuspectClue_Positive_LeavesOnlyThatOption()
+        {
+            // Luna estaba en la residencia
+            CaseGrid grid = new CaseGrid(4, 4, 4);
+            new SuspectClue(2, Category.Place, 3, true).Restrict(grid);
+
+            Assert.AreEqual(3, grid.OnlyOption(2, Category.Place));
+        }
+
+        [Test]
+        public void RelationClue_Positive_LinksPlaceAndActivity()
+        {
+            // Josep no cenó y quien estaba en la cafetería estaba cenando,
+            // así que Josep no estaba en la cafetería
+            CaseGrid grid = new CaseGrid(4, 4, 4);
+            grid.Remove(0, Category.Activity, 1);
+            new RelationClue(1, 1, true).Restrict(grid);
+
+            Assert.IsFalse(grid.IsPossible(0, Category.Place, 1));
+        }
+
+        [Test]
+        public void RelationClue_Negative_OnlyActsWhenThePlaceIsKnown()
+        {
+            // Nadie estaba leyendo en la biblioteca
+            CaseGrid grid = new CaseGrid(4, 4, 4);
+            RelationClue clue = new RelationClue(0, 3, false);
+
+            // mientras no se sabe dónde estaba nadie, la pista no descarta nada
+            Assert.IsFalse(clue.Restrict(grid));
+
+            // si Ari estaba en la biblioteca, Ari no estaba leyendo
+            grid.KeepOnly(1, Category.Place, 0);
+            Assert.IsTrue(clue.Restrict(grid));
+            Assert.IsFalse(grid.IsPossible(1, Category.Activity, 3));
         }
     }
 }

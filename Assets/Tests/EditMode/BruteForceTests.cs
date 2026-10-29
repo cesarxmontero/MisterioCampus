@@ -23,7 +23,7 @@ namespace Misterio.Tests
 
         // Sin pistas salen todas las combinaciones, como en el párrafo del azar de la memoria
         [TestCase(4, 4, 4, 576)]  // 4! * 4!
-        [TestCase(4, 4, 5, 2880)] // 4! * (5 * 4 * 3 * 2)
+        [TestCase(4, 4, 5, 2880)] // 4! * (5 * 4 * 3 * 2) (Esto en realidad es actividades factorial entre actividades - sospechosos y se hace factorial)
         [TestCase(3, 4, 4, 432)]  // 18 formas de repartir los lugares con la biblioteca ocupada * 24
         public void NoClues_CountsAllCombinations(int suspects, int places, int activities, int expected)
         {
