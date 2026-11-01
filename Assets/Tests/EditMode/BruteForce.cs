@@ -5,6 +5,7 @@ namespace Misterio.Tests
 {
     // Cuenta las soluciones probando todas las combinaciones posibles, sin propagar nada
     // Es simple pero sirve para comprobar el solucionador en casos pequeños
+    // Comprueba las pistas por su cuenta
     public static class BruteForce
     {
         public static int Count(CaseDefinition c)
@@ -18,11 +19,46 @@ namespace Misterio.Tests
             {
                 foreach (int[] activityOf in activityOptions)
                 {
-                    if (c.IsSolution(new Solution(placeOf, activityOf)))
+                    if (Fits(c, placeOf, activityOf))
                         count++;
                 }
             }
             return count;
+        }
+
+        // Mira si una combinación cumple las reglas y todas las pistas
+        // Lo de que nadie repita lugar ni actividad ya lo hace Arrangements
+        static bool Fits(CaseDefinition c, int[] placeOf, int[] activityOf)
+        {
+            // en la biblioteca tiene que haber alguien
+            if (System.Array.IndexOf(placeOf, c.CrimePlace) == -1)
+                return false;
+
+            foreach (Clue clue in c.Clues)
+            {
+                SuspectClue suspectClue = clue as SuspectClue;
+                if (suspectClue != null)
+                {
+                    int value = suspectClue.Category == Category.Place ? placeOf[suspectClue.Suspect] : activityOf[suspectClue.Suspect];
+                    if ((value == suspectClue.Value) != suspectClue.Positive)
+                        return false;
+                }
+
+                RelationClue relationClue = clue as RelationClue;
+                if (relationClue != null)
+                {
+                    // miramos si alguien estaba en ese lugar haciendo esa actividad
+                    bool happened = false;
+                    for (int s = 0; s < placeOf.Length; s++)
+                    {
+                        if (placeOf[s] == relationClue.Place && activityOf[s] == relationClue.Activity)
+                            happened = true;
+                    }
+                    if (happened != relationClue.Positive)
+                        return false;
+                }
+            }
+            return true;
         }
 
         // Todas las formas de dar a n sospechosos valores distintos entre 0 y m - 1
