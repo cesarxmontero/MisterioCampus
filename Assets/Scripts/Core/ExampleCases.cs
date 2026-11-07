@@ -9,7 +9,7 @@ namespace Misterio.Core
         public static CaseDefinition Basic()
         {
             CaseDefinition c = new CaseDefinition();
-            c.Suspects.AddRange(new[] { "Josep", "Ari", "Luna", "Nora" });
+            c.Suspects.AddRange(new[] { "Josep", "Ari", "Luna", "Lucia" });
             c.Places.AddRange(new[] { "la biblioteca", "la cafetería", "el laboratorio", "la residencia" });
             c.Activities.AddRange(new[] { "estudiando", "cenando", "en una videollamada", "leyendo" });
             c.CrimePlace = 0;
@@ -20,7 +20,7 @@ namespace Misterio.Core
             c.Clues.Add(new SuspectClue(0, Category.Activity, 2, true)); // Josep estaba en una videollamada
             c.Clues.Add(new RelationClue(3, 3, true));                   // Quien estaba en la residencia estaba leyendo
             c.Clues.Add(new SuspectClue(2, Category.Place, 3, true));    // Luna estaba en la residencia
-            c.Clues.Add(new SuspectClue(3, Category.Place, 0, false));   // Nora no estaba en la biblioteca
+            c.Clues.Add(new SuspectClue(3, Category.Place, 0, false));   // Lucia no estaba en la biblioteca
             return c;
         }
 
