@@ -5,7 +5,7 @@ namespace Misterio.Core
     {
         // El caso de ejemplo de la memoria. Tiene una sola solución, en la que
         // Josep estaba en el laboratorio en una videollamada, Ari en la biblioteca estudiando
-        // Luna en la residencia leyendo y Nora en la cafetería cenando. Ari robó el libro
+        // Luna en la residencia leyendo y Lucia en la cafetería cenando. Ari robó el libro
         public static CaseDefinition Basic()
         {
             CaseDefinition c = new CaseDefinition();

@@ -7,15 +7,25 @@ Es un juego de misterio en 2D. Durante las vacaciones de Navidad alguien roba un
 
 ## Cómo va
 
-Por ahora está hecho el núcleo lógico, que funciona sin Unity.
+Está hecho el núcleo lógico, que funciona sin Unity, y una demo jugable con el caso de ejemplo.
 
 - El modelo del caso con dos tipos de pista. Unas hablan de un sospechoso ("Josep no estaba en la biblioteca") y otras relacionan un lugar con una actividad ("quien estaba en la cafetería estaba cenando").
 - El solucionador completo que cuenta cuántas soluciones tiene un caso con búsqueda con vuelta atrás y propagación.
 - El solucionador humano que resuelve el caso como lo haría una persona, deducción a deducción. Usa cuatro técnicas, cada una con su coste (descarte directo, exclusividad, valor único y combinar pistas), y apunta los pasos que va siguiendo. Sumando los costes sale la dificultad del caso.
 - 53 pruebas unitarias. Una compara el solucionador completo con una búsqueda exhaustiva hecha aparte, en casos al azar.
+- La demo, con las cuatro salas del campus, los sospechosos, la libreta con la hoja de deducción y la pantalla final. Los gráficos son provisionales.
 
-Todavía falta el generador de casos y la parte jugable.
+Todavía falta el generador de casos.
 
+## Jugar la demo
+
+La forma más fácil es bajar el ZIP de la release `pec2`, descomprimirlo y abrir `MisterioCampus.exe` (Windows).
+
+Desde Unity, abre la escena `Assets/Scenes/Demo.unity` y dale a Play.
+
+- A y D (o las flechas) para andar
+- E para hablar, mirar y cruzar puertas
+- Tab para abrir y cerrar la libreta. Dentro, se tacha pulsando con el ratón y desde ahí se acusa
 
 ## Abrir el proyecto
 
@@ -34,4 +44,6 @@ Si quieres ver cómo razona el solucionador humano ejecuta la prueba `BasicCase_
 
 - `Assets/Scripts/Core` tiene el modelo del caso y los dos solucionadores. No depende de Unity (su Assembly Definition no tiene referencias al motor).
 - `Assets/Scripts/Core/Techniques` tiene las técnicas del solucionador humano, una clase por técnica.
+- `Assets/Scripts/Demo` tiene los scripts de la demo (partida, jugador, puertas, pistas y libreta).
+- `Assets/Scenes/Demo.unity` es la escena de la demo.
 - `Assets/Tests/EditMode` tiene las pruebas.
