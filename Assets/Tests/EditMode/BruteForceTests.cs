@@ -14,7 +14,7 @@ namespace Misterio.Tests
         [Test]
         public void BasicCase_WithoutLastClue_HasTwoSolutions()
         {
-            // Sin la pista de que Nora no estaba en la biblioteca, el libro lo pudo robar Ari o Nora
+            // Sin la pista de que Lucia no estaba en la biblioteca, el libro lo pudo robar Ari o Lucia
             CaseDefinition c = ExampleCases.Basic();
             c.Clues.RemoveAt(c.Clues.Count - 1);
 

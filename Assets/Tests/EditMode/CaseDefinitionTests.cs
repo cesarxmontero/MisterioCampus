@@ -47,15 +47,15 @@ namespace Misterio.Tests
         public void BasicCase_KnownSolutionIsValid()
         {
             // Josep laboratorio y videollamada, Ari biblioteca y estudiando,
-            // Luna residencia y leyendo, Nora cafetería y cenando
+            // Luna residencia y leyendo, Lucia cafetería y cenando
             Solution solution = new Solution(new[] { 2, 0, 3, 1 }, new[] { 2,
             0, 3, 1 });
             Assert.IsTrue(ExampleCases.Basic().IsSolution(solution));
         }
         [Test]
-        public void BasicCase_AriAndNoraSwapped_NotValid()
+        public void BasicCase_AriAndLuciaSwapped_NotValid()
         {
-            // Lo mismo pero intercambiando a Ari y Nora. Falla "Nora no estaba en la biblioteca".
+            // Lo mismo pero intercambiando a Ari y Lucia. Falla "Lucia no estaba en la biblioteca".
             Solution solution = new Solution(new[] { 2, 1, 3, 0 }, new[] { 2, 1, 3, 0 });
             Assert.IsFalse(ExampleCases.Basic().IsSolution(solution));
         }

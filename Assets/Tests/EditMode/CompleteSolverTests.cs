@@ -12,9 +12,9 @@ namespace Misterio.Tests
             List<Solution> solutions = CompleteSolver.FindSolutions(ExampleCases.Basic(), 10);
 
             Assert.AreEqual(1, solutions.Count);
-            // Josep laboratorio, Ari biblioteca, Luna residencia, Nora cafetería
+            // Josep laboratorio, Ari biblioteca, Luna residencia, Lucia cafetería
             CollectionAssert.AreEqual(new[] { 2, 0, 3, 1 }, solutions[0].PlaceOf);
-            // Josep videollamada, Ari estudiando, Luna leyendo, Nora cenando
+            // Josep videollamada, Ari estudiando, Luna leyendo, Lucia cenando
             CollectionAssert.AreEqual(new[] { 2, 0, 3, 1 }, solutions[0].ActivityOf);
         }
 
@@ -40,7 +40,7 @@ namespace Misterio.Tests
         [Test]
         public void BasicCase_WithoutLastClue_HasTwoSolutions()
         {
-            // Sin la pista de que Nora no estaba en la biblioteca, el libro lo pudo robar Ari o Nora
+            // Sin la pista de que Lucia no estaba en la biblioteca, el libro lo pudo robar Ari o Lucia
             CaseDefinition c = ExampleCases.Basic();
             c.Clues.RemoveAt(c.Clues.Count - 1);
 
