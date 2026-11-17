@@ -73,5 +73,76 @@ namespace Misterio.Tests
             }
             Assert.AreEqual(4, culprits.Count);
         }
+                [Test]
+        public void CandidateClues_AreAllTrue()
+        {
+            for (int seed = 0; seed < 100; seed++)
+            {
+                System.Random random = new System.Random(seed);
+                CaseDefinition c = CaseGenerator.EmptyCase(LevelSettings.For((Difficulty)(seed % 3)), random);
+                Solution solution = CaseGenerator.HiddenSolution(c, random);
+
+                foreach (Clue clue in CaseGenerator.CandidateClues(c, solution, random))
+                    Assert.IsTrue(clue.IsTrue(solution), clue.GetText(c) + " (semilla " + seed + ")");
+            }
+        }
+
+        [Test]
+        public void CandidateClues_CountAndNoRepeats()
+        {
+            // Nivel normal, 4 sospechosos, 4 lugares y 5 actividades
+            // 4 * (4 + 5) pistas de sospechoso y 4 * 5 de relación, menos la del culpable, son 55
+            System.Random random = new System.Random(7);
+            CaseDefinition c = CaseGenerator.EmptyCase(LevelSettings.For(Difficulty.Normal), random);
+            Solution solution = CaseGenerator.HiddenSolution(c, random);
+            List<Clue> clues = CaseGenerator.CandidateClues(c, solution, random);
+
+            Assert.AreEqual(55, clues.Count);
+            List<string> texts = new List<string>();
+            foreach (Clue clue in clues)
+            {
+                string text = clue.GetText(c);
+                Assert.IsFalse(texts.Contains(text), "repetida: " + text);
+                texts.Add(text);
+            }
+        }
+
+        [Test]
+        public void CandidateClues_NeverSayWhoWasInTheLibrary()
+        {
+            for (int seed = 0; seed < 100; seed++)
+            {
+                System.Random random = new System.Random(seed);
+                CaseDefinition c = CaseGenerator.EmptyCase(LevelSettings.For((Difficulty)(seed % 3)), random);
+                Solution solution = CaseGenerator.HiddenSolution(c, random);
+
+                foreach (Clue clue in CaseGenerator.CandidateClues(c, solution, random))
+                {
+                    SuspectClue suspectClue = clue as SuspectClue;
+                    if (suspectClue == null)
+                        continue;
+                    bool saysCulprit = suspectClue.Positive && suspectClue.Category == Category.Place && suspectClue.Value == c.CrimePlace;
+                    Assert.IsFalse(saysCulprit, clue.GetText(c));
+                }
+            }
+        }
+
+        [Test]
+        public void AllCandidates_OnlyAllowTheHiddenSolution()
+        {
+            // Con todas las pistas juntas solo puede quedar la solución que se repartió
+            for (int seed = 0; seed < 30; seed++)
+            {
+                System.Random random = new System.Random(seed);
+                CaseDefinition c = CaseGenerator.EmptyCase(LevelSettings.For((Difficulty)(seed % 3)), random);
+                Solution solution = CaseGenerator.HiddenSolution(c, random);
+                c.Clues.AddRange(CaseGenerator.CandidateClues(c, solution, random));
+
+                List<Solution> solutions = CompleteSolver.FindSolutions(c);
+                Assert.AreEqual(1, solutions.Count, "semilla " + seed);
+                CollectionAssert.AreEqual(solution.PlaceOf, solutions[0].PlaceOf);
+                CollectionAssert.AreEqual(solution.ActivityOf, solutions[0].ActivityOf);
+            }
+        }
     }
 }
