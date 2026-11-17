@@ -1,0 +1,82 @@
+using System.Collections.Generic;
+
+namespace Misterio.Core
+{
+    // Generador de casos
+    public static class CaseGenerator
+    {
+        static readonly string[] SuspectNames = { "Josep", "Ari", "Luna", "Lucía" };
+        static readonly string[] PlaceNames = { "la biblioteca", "la cafetería", "el laboratorio", "la residencia" };
+        static readonly string[] ActivityNames = { "estudiando", "cenando", "en una videollamada", "leyendo", "escuchando música", "dibujando" };
+
+        // Caso sin pistas con los sospechosos y las actividades del nivel
+        public static CaseDefinition EmptyCase(LevelSettings level, System.Random random)
+        {
+            CaseDefinition c = new CaseDefinition();
+            c.Suspects.AddRange(Pick(SuspectNames, level.Suspects, random));
+            c.Places.AddRange(PlaceNames);
+            c.Activities.AddRange(Pick(ActivityNames, level.Suspects + level.ExtraActivities, random));
+            c.CrimePlace = 0; // la biblioteca
+            return c;
+        }
+
+        // Reparte un lugar y una actividad a cada sospechoso. Primero se elige al culpable y se
+        // le pone en el lugar del robo, y los demás se reparten al azar el resto de lugares
+        public static Solution HiddenSolution(CaseDefinition c, System.Random random)
+        {
+            int n = c.Suspects.Count;
+            int[] placeOf = new int[n];
+            int[] activityOf = new int[n];
+
+            int culprit = random.Next(n);
+            placeOf[culprit] = c.CrimePlace;
+
+            List<int> places = new List<int>();
+            for (int p = 0; p < c.Places.Count; p++)
+            {
+                if (p != c.CrimePlace)
+                    places.Add(p);
+            }
+            Shuffle(places, random);
+            int next = 0;
+            for (int s = 0; s < n; s++)
+            {
+                if (s == culprit)
+                    continue;
+                placeOf[s] = places[next];
+                next++;
+            }
+
+            // las actividades se barajan y cada sospechoso se queda una, las que sobran no las hace nadie
+            List<int> activities = new List<int>();
+            for (int a = 0; a < c.Activities.Count; a++)
+                activities.Add(a);
+            Shuffle(activities, random);
+            for (int s = 0; s < n; s++)
+                activityOf[s] = activities[s];
+
+            return new Solution(placeOf, activityOf);
+        }
+
+        // Quita nombres al azar hasta que quedan los que hacen falta
+        static List<string> Pick(string[] names, int count, System.Random random)
+        {
+            List<string> list = new List<string>(names);
+            while (list.Count > count)
+                list.RemoveAt(random.Next(list.Count));
+            return list;
+        }
+
+        // Fisher-Yates
+        static void Shuffle<T>(List<T> list, System.Random random)
+        {
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+                T temp = list[i];
+                list[i] = list[j];
+                list[j] = temp;
+            }
+        }
+    }
+}
