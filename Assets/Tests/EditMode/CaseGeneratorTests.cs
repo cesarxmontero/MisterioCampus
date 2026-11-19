@@ -265,5 +265,66 @@ namespace Misterio.Tests
                 Assert.AreEqual(seed, generated.Seed);
             }
         }
+
+        // La prueba grande del generador. 500 casos por nivel, y en cada uno se comprueba todo lo que
+        // tiene que cumplir un caso, con la búsqueda exhaustiva para no fiarse solo de los solucionadores
+        [TestCase(Difficulty.Easy)]
+        [TestCase(Difficulty.Normal)]
+        [TestCase(Difficulty.Hard)]
+        public void FiveHundredCases_AreAllCorrect(Difficulty difficulty)
+        {
+            LevelSettings level = LevelSettings.For(difficulty);
+            for (int seed = 0; seed < 500; seed++)
+            {
+                string where = difficulty + ", semilla " + seed;
+                GeneratedCase generated = CaseGenerator.Generate(difficulty, seed);
+                Assert.IsNotNull(generated, where);
+                CaseDefinition c = generated.Case;
+
+                // todas las pistas son verdad
+                foreach (Clue clue in c.Clues)
+                    Assert.IsTrue(clue.IsTrue(generated.Solution), where + ", " + clue.GetText(c));
+
+                // una sola solución, contada de dos formas distintas
+                Assert.AreEqual(1, CompleteSolver.CountSolutions(c, 2), where);
+                Assert.AreEqual(1, BruteForce.Count(c), where);
+
+                // se puede resolver razonando y la dificultad es la del nivel
+                HumanResult human = HumanSolver.Solve(c);
+                Assert.IsTrue(human.Solved, where);
+                int cost = human.TotalCost();
+                Assert.IsTrue(cost >= level.MinCost && cost <= level.MaxCost, where + ", coste " + cost);
+
+                // no se pasa de afirmaciones directas
+                Assert.IsTrue(CaseGenerator.CountDirect(c) * 100 <= level.MaxDirectPercent * c.Clues.Count, where);
+
+                // y no sobra ninguna pista
+                for (int i = 0; i < c.Clues.Count; i++)
+                {
+                    Clue clue = c.Clues[i];
+                    c.Clues.RemoveAt(i);
+                    Assert.IsFalse(CaseGenerator.IsGood(c), where + ", sobra " + clue.GetText(c));
+                    c.Clues.Insert(i, clue);
+                }
+            }
+        }
+
+        [Test]
+        public void Generate_WriteOneCaseInConsole()
+        {
+            // Para ver en la consola de Unity un caso generado, con sus pistas y cómo lo resuelve el humano
+            // Cambiando la semilla o el nivel sale otro
+            GeneratedCase generated = CaseGenerator.Generate(Difficulty.Normal, 2026);
+            CaseDefinition c = generated.Case;
+
+            UnityEngine.Debug.Log("Semilla " + generated.Seed + ", intentos " + generated.Attempts + ", dificultad " + generated.Human.TotalCost());
+            foreach (Clue clue in c.Clues)
+                UnityEngine.Debug.Log("Pista. " + clue.GetText(c));
+            foreach (Step step in generated.Human.Steps)
+                UnityEngine.Debug.Log(step.ToString());
+            UnityEngine.Debug.Log("Culpable " + c.Suspects[generated.Solution.WhoWasIn(c.CrimePlace)]);
+
+            Assert.IsTrue(generated.Human.Solved);
+        }
     }
 }
