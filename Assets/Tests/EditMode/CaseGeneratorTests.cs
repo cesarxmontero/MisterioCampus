@@ -208,5 +208,31 @@ namespace Misterio.Tests
             for (int i = 0; i < a.Clues.Count; i++)
                 Assert.AreEqual(a.Clues[i].GetText(a), b.Clues[i].GetText(b));
         }
+
+        [TestCase(Difficulty.Easy)]
+        [TestCase(Difficulty.Normal)]
+        [TestCase(Difficulty.Hard)]
+        public void RemoveExtraClues_CaseStillGoodAndNoClueLeftOver(Difficulty difficulty)
+        {
+            for (int seed = 0; seed < 100; seed++)
+            {
+                CaseDefinition c = CaseGenerator.Generate(difficulty, seed);
+                int before = c.Clues.Count;
+                CaseGenerator.RemoveExtraClues(c);
+
+                Assert.IsTrue(c.Clues.Count <= before, "semilla " + seed);
+                Assert.IsTrue(CaseGenerator.IsGood(c), "semilla " + seed);
+                Assert.AreEqual(1, BruteForce.Count(c), "semilla " + seed);
+
+                // ninguna de las que quedan se puede quitar
+                for (int i = 0; i < c.Clues.Count; i++)
+                {
+                    Clue clue = c.Clues[i];
+                    c.Clues.RemoveAt(i);
+                    Assert.IsFalse(CaseGenerator.IsGood(c), "sobra " + clue.GetText(c) + " (semilla " + seed + ")");
+                    c.Clues.Insert(i, clue);
+                }
+            }
+        }
     }
 }

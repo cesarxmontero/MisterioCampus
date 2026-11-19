@@ -118,11 +118,42 @@ namespace Misterio.Core
                 }
                 c.Clues.Add(clue);
 
-                // si encara hi ha més d'una solució ja ni es prova
-                if (CompleteSolver.CountSolutions(c, 2) == 1 && HumanSolver.Solve(c).Solved)
+                if (IsGood(c))
                     return true;
             }
             return false;
+        }
+
+        // Quita las pistas que sobran. Prueba a quitar cada una y si el caso sigue saliendo bien se queda fuera
+        // Primero prueba con las directas
+        public static void RemoveExtraClues(CaseDefinition c)
+        {
+            List<Clue> order = new List<Clue>();
+            foreach (Clue clue in c.Clues)
+            {
+                if (IsDirect(clue))
+                    order.Add(clue);
+            }
+            foreach (Clue clue in c.Clues)
+            {
+                if (!IsDirect(clue))
+                    order.Add(clue);
+            }
+
+            foreach (Clue clue in order)
+            {
+                int index = c.Clues.IndexOf(clue);
+                c.Clues.RemoveAt(index);
+                if (!IsGood(c))
+                    c.Clues.Insert(index, clue); // hacía falta y se vuelve a poner donde estaba
+            }
+        }
+
+        // true si el cas te més d'una solució i el solucionador huma arriba
+        // si encara te més d'una solució ja ni es prova
+        public static bool IsGood(CaseDefinition c)
+        {
+            return CompleteSolver.CountSolutions(c, 2) == 1 && HumanSolver.Solve(c).Solved;
         }
 
         // Una afirmación directa dice el lugar o la actividad de un sospechoso sin tener que pensar
