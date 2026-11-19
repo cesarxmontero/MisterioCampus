@@ -29,5 +29,19 @@ namespace Misterio.Tests
                 Assert.IsTrue(level.Suspects + level.ExtraActivities <= 6, difficulty.ToString());
             }
         }
+        
+        [Test]
+        public void Levels_RangesGoUpAndDoNotOverlap()
+        {
+            LevelSettings easy = LevelSettings.For(Difficulty.Easy);
+            LevelSettings normal = LevelSettings.For(Difficulty.Normal);
+            LevelSettings hard = LevelSettings.For(Difficulty.Hard);
+
+            Assert.IsTrue(easy.MinCost <= easy.MaxCost);
+            Assert.IsTrue(normal.MinCost <= normal.MaxCost);
+            Assert.IsTrue(hard.MinCost <= hard.MaxCost);
+            Assert.IsTrue(easy.MaxCost < normal.MinCost);
+            Assert.IsTrue(normal.MaxCost < hard.MinCost);
+        }
     }
 }

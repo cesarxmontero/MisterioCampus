@@ -153,7 +153,7 @@ namespace Misterio.Tests
             // BruteForce no comparte código con el generador
             for (int seed = 0; seed < 100; seed++)
             {
-                CaseDefinition c = CaseGenerator.Generate(difficulty, seed);
+                CaseDefinition c = CaseGenerator.Generate(difficulty, seed).Case;
 
                 Assert.AreEqual(1, CompleteSolver.CountSolutions(c, 2), "semilla " + seed);
                 Assert.AreEqual(1, BruteForce.Count(c), "semilla " + seed);
@@ -187,7 +187,7 @@ namespace Misterio.Tests
             LevelSettings level = LevelSettings.For(difficulty);
             for (int seed = 0; seed < 100; seed++)
             {
-                CaseDefinition c = CaseGenerator.Generate(difficulty, seed);
+                CaseDefinition c = CaseGenerator.Generate(difficulty, seed).Case;
                 int direct = 0;
                 foreach (Clue clue in c.Clues)
                 {
@@ -201,8 +201,8 @@ namespace Misterio.Tests
         [Test]
         public void Generate_SameSeedSameClues()
         {
-            CaseDefinition a = CaseGenerator.Generate(Difficulty.Normal, 1234);
-            CaseDefinition b = CaseGenerator.Generate(Difficulty.Normal, 1234);
+            CaseDefinition a = CaseGenerator.Generate(Difficulty.Normal, 1234).Case;
+            CaseDefinition b = CaseGenerator.Generate(Difficulty.Normal, 1234).Case;
 
             Assert.AreEqual(a.Clues.Count, b.Clues.Count);
             for (int i = 0; i < a.Clues.Count; i++)
@@ -216,7 +216,7 @@ namespace Misterio.Tests
         {
             for (int seed = 0; seed < 100; seed++)
             {
-                CaseDefinition c = CaseGenerator.Generate(difficulty, seed);
+                CaseDefinition c = CaseGenerator.Generate(difficulty, seed).Case;
                 int before = c.Clues.Count;
                 CaseGenerator.RemoveExtraClues(c);
 
@@ -232,6 +232,37 @@ namespace Misterio.Tests
                     Assert.IsFalse(CaseGenerator.IsGood(c), "sobra " + clue.GetText(c) + " (semilla " + seed + ")");
                     c.Clues.Insert(i, clue);
                 }
+            }
+        }
+
+        [TestCase(Difficulty.Easy)]
+        [TestCase(Difficulty.Normal)]
+        [TestCase(Difficulty.Hard)]
+        public void Generate_DifficultyIsInTheRangeOfTheLevel(Difficulty difficulty)
+        {
+            LevelSettings level = LevelSettings.For(difficulty);
+            for (int seed = 0; seed < 100; seed++)
+            {
+                GeneratedCase generated = CaseGenerator.Generate(difficulty, seed);
+
+                Assert.IsNotNull(generated, "semilla " + seed);
+                int cost = HumanSolver.Solve(generated.Case).TotalCost();
+                Assert.AreEqual(cost, generated.Human.TotalCost(), "semilla " + seed);
+                Assert.IsTrue(cost >= level.MinCost && cost <= level.MaxCost, "semilla " + seed + ", coste " + cost);
+            }
+        }
+
+        [Test]
+        public void Generate_TheSolutionIsTheOnlyOne()
+        {
+            for (int seed = 0; seed < 100; seed++)
+            {
+                GeneratedCase generated = CaseGenerator.Generate((Difficulty)(seed % 3), seed);
+                Solution found = CompleteSolver.FindSolutions(generated.Case, 2)[0];
+
+                CollectionAssert.AreEqual(generated.Solution.PlaceOf, found.PlaceOf, "semilla " + seed);
+                CollectionAssert.AreEqual(generated.Solution.ActivityOf, found.ActivityOf, "semilla " + seed);
+                Assert.AreEqual(seed, generated.Seed);
             }
         }
     }

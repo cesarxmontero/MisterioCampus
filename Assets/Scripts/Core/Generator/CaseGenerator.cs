@@ -9,18 +9,37 @@ namespace Misterio.Core
         static readonly string[] PlaceNames = { "la biblioteca", "la cafetería", "el laboratorio", "la residencia" };
         static readonly string[] ActivityNames = { "estudiando", "cenando", "en una videollamada", "leyendo", "escuchando música", "dibujando" };
 
-        // Genera un caso del nivel con esa semilla
-        // De moment només afegeix pistes. Treuren les sobrants va més endevant
-        public static CaseDefinition Generate(Difficulty difficulty, int seed)
+        const int MaxAttempts = 50; // casos que se prueban con una semilla antes de rendirse
+
+        // Genera un caso del nivel con esa semilla. Si un caso no encaja en el nivel se descarta y se
+        // genera otro con el mismo Random, así la misma semilla sigue dando siempre el mismo caso
+        // Devuelve null si ninguno encaja en MaxAttempts intentos (per si de cas)
+        public static GeneratedCase Generate(Difficulty difficulty, int seed)
         {
             LevelSettings level = LevelSettings.For(difficulty);
             System.Random random = new System.Random(seed);
 
-            CaseDefinition c = EmptyCase(level, random);
-            Solution solution = HiddenSolution(c, random);
-            List<Clue> candidates = CandidateClues(c, solution, random);
-            AddClues(c, candidates, level);
-            return c;
+            for (int attempt = 1; attempt <= MaxAttempts; attempt++)
+            {
+                CaseDefinition c = EmptyCase(level, random);
+                Solution solution = HiddenSolution(c, random);
+                List<Clue> candidates = CandidateClues(c, solution, random);
+                if (!AddClues(c, candidates, level))
+                    continue;
+                RemoveExtraClues(c);
+
+                // al quitar pistas puede subir el porcentaje de directas
+                if (CountDirect(c) * 100 > level.MaxDirectPercent * c.Clues.Count)
+                    continue;
+
+                HumanResult human = HumanSolver.Solve(c);
+                int cost = human.TotalCost();
+                if (cost < level.MinCost || cost > level.MaxCost)
+                    continue;
+
+                return new GeneratedCase(c, solution, seed, attempt, human);
+            }
+            return null;
         }
 
         // Caso sin pistas con los sospechosos y las actividades del nivel
@@ -154,6 +173,18 @@ namespace Misterio.Core
         public static bool IsGood(CaseDefinition c)
         {
             return CompleteSolver.CountSolutions(c, 2) == 1 && HumanSolver.Solve(c).Solved;
+        }
+
+        // Cuantas afirmaciones directas tiene el caso
+        public static int CountDirect(CaseDefinition c)
+        {
+            int count = 0;
+            foreach (Clue clue in c.Clues)
+            {
+                if (IsDirect(clue))
+                    count++;
+            }
+            return count;
         }
 
         // Una afirmación directa dice el lugar o la actividad de un sospechoso sin tener que pensar
