@@ -144,5 +144,69 @@ namespace Misterio.Tests
                 CollectionAssert.AreEqual(solution.ActivityOf, solutions[0].ActivityOf);
             }
         }
+
+        [TestCase(Difficulty.Easy)]
+        [TestCase(Difficulty.Normal)]
+        [TestCase(Difficulty.Hard)]
+        public void GeneratedCases_HaveOneSolutionAndAreDeducible(Difficulty difficulty)
+        {
+            // BruteForce no comparte código con el generador
+            for (int seed = 0; seed < 100; seed++)
+            {
+                CaseDefinition c = CaseGenerator.Generate(difficulty, seed);
+
+                Assert.AreEqual(1, CompleteSolver.CountSolutions(c, 2), "semilla " + seed);
+                Assert.AreEqual(1, BruteForce.Count(c), "semilla " + seed);
+                Assert.IsTrue(HumanSolver.Solve(c).Solved, "semilla " + seed);
+            }
+        }
+
+        [Test]
+        public void AddClues_TheSolutionIsTheHiddenOne()
+        {
+            for (int seed = 0; seed < 100; seed++)
+            {
+                System.Random random = new System.Random(seed);
+                LevelSettings level = LevelSettings.For((Difficulty)(seed % 3));
+                CaseDefinition c = CaseGenerator.EmptyCase(level, random);
+                Solution hidden = CaseGenerator.HiddenSolution(c, random);
+                List<Clue> candidates = CaseGenerator.CandidateClues(c, hidden, random);
+
+                Assert.IsTrue(CaseGenerator.AddClues(c, candidates, level), "semilla " + seed);
+                Solution found = CompleteSolver.FindSolutions(c, 2)[0];
+                CollectionAssert.AreEqual(hidden.PlaceOf, found.PlaceOf, "semilla " + seed);
+                CollectionAssert.AreEqual(hidden.ActivityOf, found.ActivityOf, "semilla " + seed);
+            }
+        }
+
+        [TestCase(Difficulty.Easy)]
+        [TestCase(Difficulty.Normal)]
+        [TestCase(Difficulty.Hard)]
+        public void GeneratedCases_RespectTheMaxOfDirectClues(Difficulty difficulty)
+        {
+            LevelSettings level = LevelSettings.For(difficulty);
+            for (int seed = 0; seed < 100; seed++)
+            {
+                CaseDefinition c = CaseGenerator.Generate(difficulty, seed);
+                int direct = 0;
+                foreach (Clue clue in c.Clues)
+                {
+                    if (CaseGenerator.IsDirect(clue))
+                        direct++;
+                }
+                Assert.IsTrue(direct * 100 <= level.MaxDirectPercent * c.Clues.Count, "semilla " + seed);
+            }
+        }
+
+        [Test]
+        public void Generate_SameSeedSameClues()
+        {
+            CaseDefinition a = CaseGenerator.Generate(Difficulty.Normal, 1234);
+            CaseDefinition b = CaseGenerator.Generate(Difficulty.Normal, 1234);
+
+            Assert.AreEqual(a.Clues.Count, b.Clues.Count);
+            for (int i = 0; i < a.Clues.Count; i++)
+                Assert.AreEqual(a.Clues[i].GetText(a), b.Clues[i].GetText(b));
+        }
     }
 }
