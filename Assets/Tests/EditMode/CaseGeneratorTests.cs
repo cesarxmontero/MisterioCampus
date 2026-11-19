@@ -73,7 +73,7 @@ namespace Misterio.Tests
             }
             Assert.AreEqual(4, culprits.Count);
         }
-                [Test]
+        [Test]
         public void CandidateClues_AreAllTrue()
         {
             for (int seed = 0; seed < 100; seed++)
