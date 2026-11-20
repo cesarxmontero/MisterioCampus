@@ -28,6 +28,17 @@ namespace Misterio.Tests
         }
 
         [Test]
+        public void BasicCase_LongestChain()
+        {
+            // la más larga acaba en "Solo Lucia puede estar cenando" (paso 13)
+            HumanResult result = HumanSolver.Solve(ExampleCases.Basic());
+
+            Assert.AreEqual(1, result.Steps[0].Chain);
+            Assert.AreEqual(4, result.Steps[12].Chain);
+            Assert.AreEqual(4, result.LongestChain());
+        }
+
+        [Test]
         public void BasicCase_WriteStepsInConsole()
         {
             // Razonamiento en la consola de Unity
@@ -58,6 +69,7 @@ namespace Misterio.Tests
 
             Assert.IsTrue(result.Solved);
             Assert.IsTrue(UsesTechnique(result, "Valor único"));
+            Assert.AreEqual(1, CompleteSolver.CountDecisions(c)); 
         }
 
         [Test]

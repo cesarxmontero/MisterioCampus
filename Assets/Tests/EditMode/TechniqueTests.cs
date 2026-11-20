@@ -39,6 +39,7 @@ namespace Misterio.Tests
             Assert.AreEqual("Josep estaba en una videollamada, así que nadie más estaba en una videollamada.", step.Text);
             for (int s = 1; s < 4; s++)
                 Assert.IsFalse(grid.IsPossible(s, Category.Activity, 2));
+            Assert.AreEqual(2, step.Chain); // va después de tachar las otras actividades de Josep
         }
 
         [Test]
@@ -112,6 +113,7 @@ namespace Misterio.Tests
             Assert.AreEqual("Josep no estaba cenando y quien estaba en la cafetería estaba cenando, así que Josep no estaba en la cafetería.", step.Text);
             Assert.AreEqual(3, step.Cost);
             Assert.IsFalse(grid.IsPossible(0, Category.Place, 1));
+            Assert.AreEqual(2, step.Chain);            
         }
 
         [Test]

@@ -27,12 +27,24 @@ namespace Misterio.Core
             return found;
         }
 
-        static void Search(CaseDefinition c, CaseGrid grid, int limit, List<Solution> found)
+        // Cuántas veces tiene que ramificar la búsqueda para saber si la solución es única
+        // 0 si basta con propagar
+        public static int CountDecisions(CaseDefinition c)
+        {
+            if (!c.IsValid())
+                return 0;
+
+            CaseGrid grid = new CaseGrid(c.Suspects.Count, c.Places.Count, c.Activities.Count);
+            return Search(c, grid, 2, new List<Solution>());
+        }
+
+        // Devuelve cuántas veces ha ramificado
+        static int Search(CaseDefinition c, CaseGrid grid, int limit, List<Solution> found)
         {
             if (found.Count >= limit)
-                return;
+                return 0;
             if (!Propagate(c, grid))
-                return; // contradicción, aqui no hay solución
+                return 0; // contradicción
 
             // Se elige el sospechoso y la categoría con menos opciones 
             int bestSuspect = -1;
@@ -54,15 +66,16 @@ namespace Misterio.Core
 
             if (bestSuspect == -1)
             {
-                // Ya no queda nada por decidir y se comprueba la solución entera por si acaso
+                // No queda res per decidir y se comprueba la solución entera por si acaso
                 Solution solution = grid.ToSolution();
                 if (c.IsSolution(solution))
                     found.Add(solution);
-                return;
+                return 0;
             }
 
             // Se prueba cada opción en una copia de la cuadrícula. Si no lleva a nada se vuelve atrás 
             // y se prueba la siguiente
+            int decisions = 1; // esta ya cuenta
             for (int v = 0; v < grid.ValueCount(bestCategory); v++)
             {
                 if (!grid.IsPossible(bestSuspect, bestCategory, v))
@@ -70,10 +83,11 @@ namespace Misterio.Core
 
                 CaseGrid next = grid.Copy();
                 next.KeepOnly(bestSuspect, bestCategory, v);
-                Search(c, next, limit, found);
+                decisions += Search(c, next, limit, found);
                 if (found.Count >= limit)
-                    return;
+                    break;
             }
+            return decisions;
         }
 
         // Aplica las reglas y las pistas una y otra vez hasta que ya no cambia nada

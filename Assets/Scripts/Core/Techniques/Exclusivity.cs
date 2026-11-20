@@ -19,10 +19,12 @@ namespace Misterio.Core
                     if (v == -1)
                         continue;
 
+                    // depende de lo que se había tachado en su fila
+                    int chain = grid.RowChain(s, category) + 1;
                     bool changed = false;
                     for (int other = 0; other < grid.SuspectCount; other++)
                     {
-                        if (other != s && grid.Remove(other, category, v))
+                        if (other != s && grid.Remove(other, category, v, chain))
                             changed = true;
                     }
 
@@ -30,7 +32,7 @@ namespace Misterio.Core
                     {
                         string value = ValueText(c, category, v);
                         string rest = category == Category.Place ? "allí" : value;
-                        return MakeStep(c.Suspects[s] + " estaba " + value + ", así que nadie más estaba " + rest + ".");
+                        return MakeStep(c.Suspects[s] + " estaba " + value + ", así que nadie más estaba " + rest + ".", chain);
                     }
                 }
             }

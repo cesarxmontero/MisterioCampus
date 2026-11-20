@@ -57,6 +57,29 @@ namespace Misterio.Tests
         }
 
         [Test]
+        public void Remove_SavesTheChain()
+        {
+            CaseGrid grid = new CaseGrid(3, 4, 4);
+            grid.Remove(0, Category.Place, 1, 3);
+            grid.Remove(0, Category.Place, 1, 5); // ya estaba tachada y se queda la primera
+
+            Assert.AreEqual(3, grid.Chain(0, Category.Place, 1));
+            Assert.AreEqual(0, grid.Chain(0, Category.Place, 2)); // sin tachar
+        }
+
+        [Test]
+        public void RowAndColumnChain_TheLongest()
+        {
+            CaseGrid grid = new CaseGrid(3, 4, 4);
+            grid.Remove(0, Category.Activity, 0, 1);
+            grid.Remove(0, Category.Activity, 1, 4);
+            grid.Remove(2, Category.Activity, 0, 2);
+
+            Assert.AreEqual(4, grid.RowChain(0, Category.Activity));
+            Assert.AreEqual(2, grid.ColumnChain(Category.Activity, 0));
+        }
+
+        [Test]
         public void ToSolution_ReadsTheOnlyOptions()
         {
             CaseGrid grid = new CaseGrid(2, 2, 2);

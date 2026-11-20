@@ -266,6 +266,27 @@ namespace Misterio.Tests
             }
         }
 
+        [Test]
+        public void Generate_WithoutRange_CasesTheLevelWouldDiscard()
+        {
+            // sin rango sale de todo, también casos fuera del rango del nivel normal
+            LevelSettings normal = LevelSettings.For(Difficulty.Normal);
+            LevelSettings open = LevelSettings.For(Difficulty.Normal);
+            open.MinCost = 0;
+            open.MaxCost = int.MaxValue;
+
+            int outside = 0;
+            for (int seed = 0; seed < 50; seed++)
+            {
+                GeneratedCase generated = CaseGenerator.Generate(open, seed);
+                Assert.IsNotNull(generated, "semilla " + seed);
+                int cost = generated.Human.TotalCost();
+                if (cost < normal.MinCost || cost > normal.MaxCost)
+                    outside++;
+            }
+            Assert.IsTrue(outside > 0);
+        }
+
         // La prueba grande del generador. 500 casos por nivel, y en cada uno se comprueba todo lo que
         // tiene que cumplir un caso, con la búsqueda exhaustiva para no fiarse solo de los solucionadores
         [TestCase(Difficulty.Easy)]

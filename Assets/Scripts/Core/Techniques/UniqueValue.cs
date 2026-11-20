@@ -24,10 +24,12 @@ namespace Misterio.Core
                     int only = OnlySuspectFor(grid, category, v);
                     if (only != -1 && grid.CountOptions(only, category) > 1)
                     {
-                        grid.KeepOnly(only, category, v);
+                        // depende de lo que se había tachado en la columna
+                        int chain = grid.ColumnChain(category, v) + 1;
+                        grid.KeepOnly(only, category, v, chain);
                         string name = c.Suspects[only];
                         string value = ValueText(c, category, v);
-                        return MakeStep("Solo " + name + " puede estar " + value + ", así que " + name + " estaba " + value + ".");
+                        return MakeStep("Solo " + name + " puede estar " + value + ", así que " + name + " estaba " + value + ".", chain);
                     }
                 }
             }

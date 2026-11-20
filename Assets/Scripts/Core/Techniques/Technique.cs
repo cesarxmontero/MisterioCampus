@@ -19,11 +19,11 @@ namespace Misterio.Core
         // cuadrícula y devuelve el paso. Si no encuentra ninguna devuelve null
         public abstract Step TryApply(CaseDefinition c, CaseGrid grid);
 
-        protected Step MakeStep(string text)
+        // chain es la longitud de la cadena de deducciones. 1 si sale directamente de las pistas
+        protected Step MakeStep(string text, int chain = 1)
         {
-            return new Step(Name, Cost, text);
+            return new Step(Name, Cost, text, chain);
         }
-
         // A los lugares les pone "en" delante y las actividades las deja igual
         protected static string ValueText(CaseDefinition c, Category category, int value)
         {

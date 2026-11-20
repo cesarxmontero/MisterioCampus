@@ -47,6 +47,23 @@ namespace Misterio.Tests
             Assert.AreEqual(2, CompleteSolver.CountSolutions(c));
         }
 
+        [Test]
+        public void BasicCase_OnlyPropagating()
+        {
+            // no tiene que decidir nada
+            Assert.AreEqual(0, CompleteSolver.CountDecisions(ExampleCases.Basic()));
+        }
+
+        [Test]
+        public void BasicCase_WithoutLastClue_OneDecision()
+        {
+            // con dos soluciones tiene que ramificar una vez
+            CaseDefinition c = ExampleCases.Basic();
+            c.Clues.RemoveAt(c.Clues.Count - 1);
+
+            Assert.AreEqual(1, CompleteSolver.CountDecisions(c));
+        }
+
         // Sin pistas tienen que salir todas las combinaciones posibles
         [TestCase(4, 4, 4, 576)]  // 4! * 4!
         [TestCase(4, 4, 5, 2880)] // 4! * (5 * 4 * 3 * 2)

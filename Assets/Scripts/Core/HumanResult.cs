@@ -34,5 +34,17 @@ namespace Misterio.Core
             }
             return max;
         }
+
+        // La cadena de deducciones más larga, cuántos pasos seguidos dependen cada uno del anterior
+        public int LongestChain()
+        {
+            int max = 0;
+            foreach (Step step in Steps)
+            {
+                if (step.Chain > max)
+                    max = step.Chain;
+            }
+            return max;
+        }
     }
 }

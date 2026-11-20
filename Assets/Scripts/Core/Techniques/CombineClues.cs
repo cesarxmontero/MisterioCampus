@@ -38,10 +38,13 @@ namespace Misterio.Core
             string activity = ValueText(c, Category.Activity, r.Activity);
             string clueText = "quien estaba " + place + " estaba " + activity;
 
-            if (!grid.IsPossible(s, Category.Place, r.Place) && grid.Remove(s, Category.Activity, r.Activity))
-                return MakeStep(name + " no estaba " + place + " y " + clueText + ", así que " + name + " no estaba " + activity + ".");
-            if (!grid.IsPossible(s, Category.Activity, r.Activity) && grid.Remove(s, Category.Place, r.Place))
-                return MakeStep(name + " no estaba " + activity + " y " + clueText + ", así que " + name + " no estaba " + place + ".");
+            // la cadena sigue desde la opción que ya estaba tachada
+            int chain = grid.Chain(s, Category.Place, r.Place) + 1;
+            if (!grid.IsPossible(s, Category.Place, r.Place) && grid.Remove(s, Category.Activity, r.Activity, chain))
+                return MakeStep(name + " no estaba " + place + " y " + clueText + ", así que " + name + " no estaba " + activity + ".", chain);
+            chain = grid.Chain(s, Category.Activity, r.Activity) + 1;
+            if (!grid.IsPossible(s, Category.Activity, r.Activity) && grid.Remove(s, Category.Place, r.Place, chain))
+                return MakeStep(name + " no estaba " + activity + " y " + clueText + ", así que " + name + " no estaba " + place + ".", chain);
             return null;
         }
 
@@ -54,10 +57,13 @@ namespace Misterio.Core
             string activity = ValueText(c, Category.Activity, r.Activity);
             string clueText = "nadie estaba " + activity + " " + place;
 
-            if (grid.OnlyOption(s, Category.Place) == r.Place && grid.Remove(s, Category.Activity, r.Activity))
-                return MakeStep(name + " estaba " + place + " y " + clueText + ", así que " + name + " no estaba " + activity + ".");
-            if (grid.OnlyOption(s, Category.Activity) == r.Activity && grid.Remove(s, Category.Place, r.Place))
-                return MakeStep(name + " estaba " + activity + " y " + clueText + ", así que " + name + " no estaba " + place + ".");
+            // aquí sigue desde lo tachado en la fila
+            int chain = grid.RowChain(s, Category.Place) + 1;
+            if (grid.OnlyOption(s, Category.Place) == r.Place && grid.Remove(s, Category.Activity, r.Activity, chain))
+                return MakeStep(name + " estaba " + place + " y " + clueText + ", así que " + name + " no estaba " + activity + ".", chain);
+            chain = grid.RowChain(s, Category.Activity) + 1;
+            if (grid.OnlyOption(s, Category.Activity) == r.Activity && grid.Remove(s, Category.Place, r.Place, chain))
+                return MakeStep(name + " estaba " + activity + " y " + clueText + ", así que " + name + " no estaba " + place + ".", chain);
             return null;
         }
     }

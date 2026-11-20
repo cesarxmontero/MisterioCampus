@@ -16,7 +16,12 @@ namespace Misterio.Core
         // Devuelve null si ninguno encaja en MaxAttempts intentos (per si de cas)
         public static GeneratedCase Generate(Difficulty difficulty, int seed)
         {
-            LevelSettings level = LevelSettings.For(difficulty);
+            return Generate(LevelSettings.For(difficulty), seed);
+        }
+
+        // Lo mismo con los parámetros que se quiera. Las pruebas lo usan sin rango de dificultad
+        public static GeneratedCase Generate(LevelSettings level, int seed)
+        {
             System.Random random = new System.Random(seed);
 
             for (int attempt = 1; attempt <= MaxAttempts; attempt++)
