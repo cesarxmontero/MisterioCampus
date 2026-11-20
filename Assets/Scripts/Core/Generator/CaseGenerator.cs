@@ -173,7 +173,7 @@ namespace Misterio.Core
             }
         }
 
-        // true si el cas te més d'una solució i el solucionador huma arriba
+        // true si el cas te una solució i el solucionador huma arriba
         // si encara te més d'una solució ja ni es prova
         public static bool IsGood(CaseDefinition c)
         {
