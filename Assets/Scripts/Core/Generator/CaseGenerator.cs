@@ -210,7 +210,7 @@ namespace Misterio.Core
         }
 
         // Fisher-Yates
-        static void Shuffle<T>(List<T> list, System.Random random)
+        internal static void Shuffle<T>(List<T> list, System.Random random)
         {
             for (int i = list.Count - 1; i > 0; i--)
             {
