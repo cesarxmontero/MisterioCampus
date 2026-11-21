@@ -129,11 +129,11 @@ public class DemoGame : MonoBehaviour
 
     public void StartGame()
     {
-        // libreta en blanco y todos los puntos otra vez encendidos. El true es para que también
-        // encuentre los de las salas apagadas
+        // libreta en blanco y las pistas repartidas por el campus
         found.Clear();
         sources.Clear();
         notebook.Setup(currentCase, found, sources);
+        PlaceClues(CluePlacement.Place(currentCase, 0));
         foreach (GameObject place in places)
         {
             foreach (ClueSpot spot in place.GetComponentsInChildren<ClueSpot>(true))
@@ -152,7 +152,35 @@ public class DemoGame : MonoBehaviour
     }
 
     // Campus
-
+    
+    // Da a cada sospechoso sus pistas y pone los indicios en los huecos de cada sala. Lo que sobra se esconde
+    // El true es para que también encuentre los de las salas apagadas
+    void PlaceClues(CluePlacement placement)
+    {
+        for (int r = 0; r < places.Length; r++)
+        {
+            int slot = 0;
+            foreach (ClueSpot spot in places[r].GetComponentsInChildren<ClueSpot>(true))
+            {
+                if (spot.IsEvidence)
+                {
+                    int clue = slot < CluePlacement.SlotsPerRoom ? placement.BySlot[r, slot] : -1;
+                    slot++;
+                    spot.gameObject.SetActive(clue != -1);
+                    if (clue != -1)
+                        spot.SetEvidence(clue, (int)CluePlacement.KindOf(currentCase.Clues[clue]));
+                }
+                else
+                {
+                    int suspect = currentCase.Suspects.IndexOf(spot.Source);
+                    spot.gameObject.SetActive(suspect != -1);
+                    if (suspect != -1)
+                        spot.SetClues(placement.BySuspect[suspect]);
+                }
+                spot.MarkFound(false);
+            }
+        }
+    }
     void ShowPlace()
     {
         for (int i = 0; i < places.Length; i++)
@@ -168,8 +196,11 @@ public class DemoGame : MonoBehaviour
         int missing = 0;
         foreach (ClueSpot spot in places[current].GetComponentsInChildren<ClueSpot>())
         {
-            if (!found.Contains(spot.Clue))
-                missing++;
+            foreach (int clue in spot.Clues)
+            {
+                if (!found.Contains(clue))
+                    missing++;
+            }
         }
         if (missing == 0)
             messageText.text = "En esta sala ya no queda nada nuevo.";
@@ -194,25 +225,38 @@ public class DemoGame : MonoBehaviour
         return nearest;
     }
 
-    // Habla con un sospechoso o mira un objeto. La frase sale siempre, pero la pista se apunta solo la primera vez
+    // Habla con un sospechoso o mira un indicio
     void Talk(ClueSpot spot)
     {
-        string text = "<b>" + spot.Source + "</b>   " + spot.Line + "\n<size=80%>";
-        if (found.Contains(spot.Clue))
-            text += "Esto ya lo tienes en la libreta.";
+        int clue = NextClue(spot);
+        string text = "<b>" + spot.Source + "</b>   ";
+        if (clue == -1)
+        {
+            clue = spot.Clues[spot.Clues.Count - 1];
+            text += currentCase.Clues[clue].GetText(currentCase) + "\n<size=80%>Esto ya lo tienes en la libreta.";
+        }
         else
         {
-            found.Add(spot.Clue);
+            found.Add(clue);
             sources.Add(spot.Source);
-            text += "Pista " + found.Count + " de " + currentCase.Clues.Count + " en la libreta  ·  "
-                + currentCase.Clues[spot.Clue].GetText(currentCase);
+            text += currentCase.Clues[clue].GetText(currentCase) + "\n<size=80%>Pista " + found.Count + " de "
+                + currentCase.Clues.Count + " en la libreta.";
         }
-        spot.MarkFound(true);
+        spot.MarkFound(NextClue(spot) == -1);
         messageText.text = text + "</size>";
     }
 
-    // Cruza una puerta. Funde a negro, cambia de sala y deja al jugador junto a la puerta que lleva
-    // de vuelta.
+    // La primera pista de ese sitio que todavía no está en la libreta, o -1 si ya están todas
+    int NextClue(ClueSpot spot)
+    {
+        foreach (int clue in spot.Clues)
+        {
+            if (!found.Contains(clue))
+                return clue;
+        }
+        return -1;
+    }
+    // Cruza una puerta. Funde a negro, cambia de sala y deja al jugador junto a la puerta que lleva de vuelta.
     IEnumerator GoThrough(Door door)
     {
         changingPlace = true;
