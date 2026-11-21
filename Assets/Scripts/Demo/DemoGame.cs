@@ -7,10 +7,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// Demo jugable de la PEC 2 con el caso de la memoria
-// El jugador anda por el campus con A y D. Con E habla con los sospechosos, mira los objetos y cruza
-// las puertas. Las pistas se apuntan en la libreta, que se abre con Tab, y desde ella se acusa
-// El juego sabe quién fue porque al empezar le pide la solución al solucionador completo
+// La partida. Al empezar se elige el nivel, se genera un caso nuevo y sus pistas se reparten por el campus
+// El jugador anda con A y D. Con E habla con los sospechosos, mira los objetos y cruza las puertas
+// Las pistas se apuntan en la libreta que se abre con Tab y desde ella se acusa
 public class DemoGame : MonoBehaviour
 {
     const float FadeTime = 0.25f; // lo que tarda el fundido a negro, en segundos
@@ -33,6 +32,7 @@ public class DemoGame : MonoBehaviour
 
     [Header("Libreta y final")]
     [SerializeField] Notebook notebook;
+    [SerializeField] GameObject[] accuseButtons; 
     [SerializeField] TMP_Text endText;
 
     CaseDefinition currentCase;
@@ -45,20 +45,6 @@ public class DemoGame : MonoBehaviour
 
     void Start()
     {
-        currentCase = ExampleCases.Basic();
-
-        // El solucionador completo da la solución, y de paso se comprueba que solo hay una
-        List<Solution> solutions = CompleteSolver.FindSolutions(currentCase, 2);
-        if (solutions.Count != 1)
-        {
-            Debug.LogError("El caso de la demo tiene " + solutions.Count + " soluciones y tendría que tener una");
-            return;
-        }
-        solution = solutions[0];
-
-        // El humano dice cuántos pasos hacen falta y lo difícil que es, para enseñarlo al final
-        humanResult = HumanSolver.Solve(currentCase);
-
         ShowStart();
     }
 
@@ -70,11 +56,11 @@ public class DemoGame : MonoBehaviour
         if (keyboard == null || changingPlace)
             return;
 
-        // En la pantalla de inicio y en la final, E hace lo mismo que el botón
+        // En la pantalla de inicio y en la final, E empieza en normal
         if (startScreen.activeSelf)
         {
             if (keyboard.eKey.wasPressedThisFrame)
-                StartGame();
+                StartGame(1);
             return;
         }
         if (endScreen.activeSelf)
@@ -127,18 +113,32 @@ public class DemoGame : MonoBehaviour
         SetFade(0f);
     }
 
-    public void StartGame()
+    // Los botones de nivel pasan 0 para fácil, 1 para normal y 2 para difícil
+    public void StartGame(int level)
     {
-        // libreta en blanco y las pistas repartidas por el campus
+        // Si el caso no sale o sus pistas no caben en el campus se prueba con la semilla siguiente
+        int seed = Random.Range(1, 100000);
+        GeneratedCase generated = null;
+        CluePlacement placement = null;
+        while (placement == null)
+        {
+            generated = CaseGenerator.Generate((Difficulty)level, seed);
+            if (generated != null)
+                placement = CluePlacement.Place(generated.Case, seed);
+            if (placement == null)
+                seed++;
+        }
+        currentCase = generated.Case;
+        solution = generated.Solution;
+        humanResult = generated.Human;
+
+        // libreta en blanco, las pistas repartidas y solo los botones de acusar de los que salen en el caso
         found.Clear();
         sources.Clear();
         notebook.Setup(currentCase, found, sources);
-        PlaceClues(CluePlacement.Place(currentCase, 0));
-        foreach (GameObject place in places)
-        {
-            foreach (ClueSpot spot in place.GetComponentsInChildren<ClueSpot>(true))
-                spot.MarkFound(false);
-        }
+        PlaceClues(placement);
+        for (int i = 0; i < accuseButtons.Length; i++)
+            accuseButtons[i].SetActive(currentCase.Suspects.Contains(CaseGenerator.SuspectNames[i]));
 
         startScreen.SetActive(false);
         hud.SetActive(true);
@@ -312,9 +312,10 @@ public class DemoGame : MonoBehaviour
         Deselect();
     }
 
-    // Final. Los botones de acusar pasan el número del sospechoso, Josep es el 0
-    public void Accuse(int suspect)
+    // Final. Los botones de acusar pasan su número en CaseGenerator.SuspectNames
+    public void Accuse(int button)
     {
+        int suspect = currentCase.Suspects.IndexOf(CaseGenerator.SuspectNames[button]);
         int culprit = solution.WhoWasIn(currentCase.CrimePlace);
 
         string text;

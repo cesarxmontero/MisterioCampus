@@ -5,7 +5,7 @@ namespace Misterio.Core
     // Generador de casos
     public static class CaseGenerator
     {
-        static readonly string[] SuspectNames = { "Josep", "Ari", "Luna", "Lucía" };
+        public static readonly string[] SuspectNames = { "Josep", "Ari", "Luna", "Lucía" };
         static readonly string[] PlaceNames = { "la biblioteca", "la cafetería", "el laboratorio", "la residencia" };
         static readonly string[] ActivityNames = { "estudiando", "cenando", "en una videollamada", "leyendo", "escuchando música", "dibujando" };
 

@@ -66,7 +66,7 @@ public class Notebook : MonoBehaviour, IPointerClickHandler
     void WriteClues()
     {
         string text = "<color=" + HeaderColor + "><b>Pistas</b></color>  <size=80%>" + found.Count + " de " + currentCase.Clues.Count + "</size>\n";
-        text += "<size=85%><i>Quien estaba en la biblioteca a las 23:00 robó el libro.</i></size>\n\n";
+        text += "<size=85%><i>Quien estaba en la biblioteca a las 23:00 robó el libro. Cada uno estaba en un sitio distinto y haciendo algo distinto.</i></size>\n\n";
         if (found.Count == 0)
             text += "Todavía no has encontrado ninguna. Busca por el campus.";
         for (int i = 0; i < found.Count; i++)
